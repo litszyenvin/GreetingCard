@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.greetingcard"
+    namespace = "com.example.greetingcard"       // keep in sync with your Kotlin package
     compileSdk = 36
 
     defaultConfig {
@@ -27,7 +27,7 @@ android {
         }
     }
 
-    // Use Java 17 with modern Compose/AGP
+    // Use Java 17 for recent AGP/Compose
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -47,7 +47,7 @@ android {
 }
 
 dependencies {
-    // Version-catalog entries you already have
+    // Version-catalog entries (you already have these)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -66,10 +66,10 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Add these two if they aren’t in your version catalog yet:
+    // Add these two if they aren't in your catalog yet (safe to keep as direct versions)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
 
-    // Optional but handy for timers/fetching in your ViewModel
+    // Optional but useful for timers/fetching in the ViewModel
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 }

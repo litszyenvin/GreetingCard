@@ -13,7 +13,7 @@ class TrainViewModel : ViewModel() {
     val statusText: StateFlow<String> = _statusText.asStateFlow()
 
     init {
-        // For now, simulate what your Raspberry Pi script would output.
+        // Simulate your Pi script output for now
         viewModelScope.launch {
             delay(1000)
             _statusText.value =

@@ -11,13 +11,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TrainTrackerApp(vm: TrainViewModel = viewModel()) {
-    val text by collectAsStateWithLifecycle(vm.statusText, initialValue = "Loading…")
+    val text by vm.statusText.collectAsState(initial = "Loading…")
 
     MaterialTheme {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

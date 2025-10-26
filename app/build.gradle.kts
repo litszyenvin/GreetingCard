@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose) // keep this so we don't need composeOptions{}
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.example.greetingcard"       // keep in sync with your Kotlin package
+    namespace = "com.example.greetingcard"
     compileSdk = 36
 
     defaultConfig {
@@ -15,6 +15,18 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Read your creds from gradle.properties into BuildConfig.*
+        buildConfigField(
+            "String",
+            "RTT_USER",
+            "\"${(project.findProperty("RTT_USER") as String?) ?: ""}\""
+        )
+        buildConfigField(
+            "String",
+            "RTT_PASS",
+            "\"${(project.findProperty("RTT_PASS") as String?) ?: ""}\""
+        )
     }
 
     buildTypes {
@@ -27,7 +39,6 @@ android {
         }
     }
 
-    // Use Java 17 for recent AGP/Compose
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -37,6 +48,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true   // IMPORTANT for BuildConfig.RTT_USER/PASS
     }
 
     packaging {
@@ -47,7 +59,7 @@ android {
 }
 
 dependencies {
-    // Version-catalog entries (you already have these)
+    // Version-catalog entries you already use
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -66,10 +78,15 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Add these two if they aren't in your catalog yet (safe to keep as direct versions)
+    // Compose + ViewModel helper
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
 
-    // Optional but useful for timers/fetching in the ViewModel
+    // Coroutines (for ViewModel)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // Material components (Theme.Material3.*)
+    implementation("com.google.android.material:material:1.12.0")
+
+    // OkHttp (networking)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App theme using Material3, no action bar -->
+    <style name="Theme.GreetingCard" parent="Theme.Material3.DayNight">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
 
-    <style name="Theme.GreetingCard" parent="android:Theme.Material.Light.NoActionBar" />
-
-    <style name="Theme.GreetingCard.AppWidgetContainerParent" parent="@android:style/Theme.DeviceDefault">
-        <!-- Radius of the outer bound of widgets to make the rounded corners -->
-        <item name="appWidgetRadius">16dp</item>
-        <!--
-        Radius of the inner view's bound of widgets to make the rounded corners.
-        It needs to be 8dp or less than the value of appWidgetRadius
-        -->
-        <item name="appWidgetInnerRadius">8dp</item>
+        <!-- Optional edge-to-edge defaults -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
-    <style name="Theme.GreetingCard.AppWidgetContainer" parent="Theme.GreetingCard.AppWidgetContainerParent">
-        <!-- Apply padding to avoid the content of the widget colliding with the rounded corners -->
-        <item name="appWidgetPadding">16dp</item>
-    </style>
+    <!-- Referenced by the template widget layout (if present) -->
+    <style name="Theme.GreetingCard.AppWidgetContainer" parent="Theme.GreetingCard" />
 </resources>

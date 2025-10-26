@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Needed for network calls -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -20,7 +19,19 @@
             </intent-filter>
         </activity>
 
-        <!-- If you still have a widget provider, leave it; otherwise remove its <receiver> -->
+        <!-- Widget provider -->
+        <receiver
+            android:name=".NewAppWidget2"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.greetingcard.action.REFRESH2" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/new_app_widget2_info" />
+        </receiver>
 
     </application>
 

@@ -2,7 +2,11 @@
 <resources>
     <string name="app_name">Train Tracker</string>
 
-    <!-- Only needed if the template widget files still exist -->
+    <!-- Widget text -->
+    <string name="widget_title">Train Tracker</string>
+    <string name="widget_refresh">Refresh</string>
+
+    <!-- (Optional) keep if any old template references exist -->
     <string name="appwidget_text">Hello widget</string>
     <string name="app_widget_description">Train Tracker home screen widget</string>
 </resources>

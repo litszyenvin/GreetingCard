@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AppWidgetProviderInfo xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/new_app_widget2"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen|keyguard"
+    android:previewImage="@mipmap/ic_launcher" />

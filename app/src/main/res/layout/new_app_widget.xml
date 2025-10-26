@@ -1,19 +1,33 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget.GreetingCard.AppWidget.Container"
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RemoteViews-friendly layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/transparent"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:theme="@style/Theme.GreetingCard.AppWidgetContainer">
+    android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/appwidget_text"
-        style="@style/Widget.GreetingCard.AppWidget.InnerView"
+        android:id="@+id/widget_title"
+        android:text="@string/widget_title"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/widget_text"
+        android:text="Loading…"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/widget_refresh"
+        android:text="@string/widget_refresh"
+        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="8dp"
-        android:contentDescription="@string/appwidget_text"
-        android:text="@string/appwidget_text"
-        android:textSize="24sp"
-        android:textStyle="bold|italic" />
-</RelativeLayout>
+        android:layout_height="wrap_content" />
+</LinearLayout>

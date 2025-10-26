@@ -2,15 +2,21 @@ package com.example.greetingcard
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.action.ActionParameters
-import androidx.glance.action.actionRunCallback
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.appWidgetBackground
+import androidx.glance.appwidget.provideContent
+import androidx.glance.background
+import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -18,11 +24,8 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.material3.Button
-import androidx.glance.material3.Divider
-import androidx.glance.material3.GlanceTheme
-import androidx.glance.material3.Text
 import androidx.glance.text.FontWeight
+import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.dp
 import androidx.glance.unit.sp
@@ -78,41 +81,38 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
         routeB: RouteSection,
         refreshLabel: String
     ) {
-        GlanceTheme {
-            Column(
-                modifier = GlanceModifier
-                    .fillMaxSize()
-                    .appWidgetBackground()
-                    .padding(12.dp)
+        Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .appWidgetBackground()
+                .padding(12.dp)
+        ) {
+            Text(
+                text = widgetTitle,
+                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            )
+
+            Spacer(modifier = GlanceModifier.height(8.dp))
+
+            RouteSectionContent(routeA)
+
+            DividerSpacer()
+
+            RouteSectionContent(routeB)
+
+            Spacer(modifier = GlanceModifier.height(12.dp))
+
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Horizontal.End
             ) {
                 Text(
-                    text = widgetTitle,
-                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                )
-
-                Spacer(modifier = GlanceModifier.height(8.dp))
-
-                RouteSectionContent(routeA)
-
-                Divider(
+                    text = refreshLabel,
+                    style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium),
                     modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 8.dp)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .clickable(actionRunCallback<RefreshTrainStatusAction>())
                 )
-
-                RouteSectionContent(routeB)
-
-                Spacer(modifier = GlanceModifier.height(12.dp))
-
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Horizontal.End
-                ) {
-                    Button(
-                        text = refreshLabel,
-                        onClick = actionRunCallback<RefreshTrainStatusAction>()
-                    )
-                }
             }
         }
     }
@@ -127,6 +127,17 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
         Text(
             text = section.body,
             style = TextStyle(fontSize = 13.sp)
+        )
+    }
+
+    @Composable
+    private fun DividerSpacer() {
+        Box(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 8.dp)
+                .height(1.dp)
+                .background(ColorProvider(day = Color(0x22000000), night = Color(0x22FFFFFF)))
         )
     }
 }

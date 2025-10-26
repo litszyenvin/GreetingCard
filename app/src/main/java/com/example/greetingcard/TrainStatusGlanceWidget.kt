@@ -2,19 +2,19 @@ package com.example.greetingcard
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.action.ActionParameters
-import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.material3.Button
+import androidx.glance.appwidget.material3.ButtonDefaults
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -55,12 +55,14 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
         val refreshLabel = context.getString(R.string.widget_refresh)
 
         provideContent {
-            TrainStatusGlanceContent(
-                widgetTitle = widgetTitle,
-                routeA = RouteSection(aTitle, aBody),
-                routeB = RouteSection(bTitle, bBody),
-                refreshLabel = refreshLabel
-            )
+            GlanceTheme {
+                TrainStatusGlanceContent(
+                    widgetTitle = widgetTitle,
+                    routeA = RouteSection(aTitle, aBody),
+                    routeB = RouteSection(bTitle, bBody),
+                    refreshLabel = refreshLabel
+                )
+            }
         }
     }
 
@@ -85,11 +87,13 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .fillMaxSize()
                 .appWidgetBackground()
+                .background(GlanceTheme.colors.surface)
                 .padding(12.dp)
         ) {
             Text(
                 text = widgetTitle,
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                color = GlanceTheme.colors.onSurface
             )
 
             Spacer(modifier = GlanceModifier.height(8.dp))
@@ -106,12 +110,11 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
                 modifier = GlanceModifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Horizontal.End
             ) {
-                Text(
+                Button(
                     text = refreshLabel,
-                    style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium),
-                    modifier = GlanceModifier
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                        .clickable(actionRunCallback<RefreshTrainStatusAction>())
+                    onClick = actionRunCallback<RefreshTrainStatusAction>(),
+                    colors = ButtonDefaults.filledTonalButtonColors(),
+                    modifier = GlanceModifier.padding(horizontal = 12.dp)
                 )
             }
         }
@@ -121,12 +124,14 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
     private fun RouteSectionContent(section: RouteSection) {
         Text(
             text = section.title,
-            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+            color = GlanceTheme.colors.onSurface
         )
         Spacer(modifier = GlanceModifier.height(4.dp))
         Text(
             text = section.body,
-            style = TextStyle(fontSize = 13.sp)
+            style = TextStyle(fontSize = 13.sp),
+            color = GlanceTheme.colors.onSurfaceVariant
         )
     }
 
@@ -137,7 +142,7 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 8.dp)
                 .height(1.dp)
-                .background(ColorProvider(day = Color(0x22000000), night = Color(0x22FFFFFF)))
+                .background(GlanceTheme.colors.outline)
         ) { }
     }
 }

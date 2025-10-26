@@ -27,8 +27,8 @@ import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.dp
-import androidx.glance.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.greetingcard.data.TrainRepository
 
 class TrainStatusGlanceWidget : GlanceAppWidget() {
@@ -138,7 +138,7 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
                 .padding(top = 8.dp, bottom = 8.dp)
                 .height(1.dp)
                 .background(ColorProvider(day = Color(0x22000000), night = Color(0x22FFFFFF)))
-        )
+        ) { }
     }
 }
 

@@ -19,11 +19,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Single, template-named widget provider -->
+        <!-- Single widget provider -->
         <receiver
             android:name=".NewAppWidget"
             android:exported="true"
-            android:label="@string/widget_title">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.example.greetingcard.action.REFRESH" />

@@ -18,9 +18,12 @@ class TrainViewModel(
     private val _statusText = MutableStateFlow("Loading train info…")
     val statusText: StateFlow<String> = _statusText.asStateFlow()
 
-    // Change these to your preferred route/refresh rate
-    private val origin = "SAC"
-    private val destination = "ZFD"
+    // Two routes: SAC → ZFD and ZFD → SAC
+    private val originA = "SAC"
+    private val destA = "ZFD"
+    private val originB = "ZFD"
+    private val destB = "SAC"
+
     private val refreshMs = 30_000L     // 30 seconds
     private val maxBackoffMs = 5 * 60_000L
 
@@ -33,7 +36,13 @@ class TrainViewModel(
             var delayMs = 0L
             while (isActive) {
                 try {
-                    _statusText.value = repo.getStatusText(origin, destination, take = 4)
+                    // Fetch both directions sequentially
+                    val a = repo.getStatusText(originA, destA, take = 4)  // SAC → ZFD
+                    val b = repo.getStatusText(originB, destB, take = 4)  // ZFD → SAC
+
+                    // Combine with a divider. The repository already includes a header line.
+                    _statusText.value = a + "\n\n" + b
+
                     // reset backoff on success
                     delayMs = refreshMs
                 } catch (e: Exception) {

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- RemoteViews-friendly layout -->
+<!-- Keep it simple & RemoteViews-friendly -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:orientation="vertical"
     android:padding="12dp"
     android:background="@android:color/transparent"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <TextView
@@ -19,7 +19,9 @@
     <TextView
         android:id="@+id/widget_text"
         android:text="Loading…"
-        android:textSize="14sp"
+        android:textSize="13sp"
+        android:lineSpacingExtra="2dp"
+        android:maxLines="12"
         android:layout_marginTop="6dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

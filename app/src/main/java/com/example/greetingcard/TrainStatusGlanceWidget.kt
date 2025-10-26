@@ -12,12 +12,11 @@ import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.material3.Button
-import androidx.glance.appwidget.material3.ButtonDefaults
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.appwidget.action.clickable
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
@@ -92,8 +91,11 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
         ) {
             Text(
                 text = widgetTitle,
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                color = GlanceTheme.colors.onSurface
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = GlanceTheme.colors.onSurface
+                )
             )
 
             Spacer(modifier = GlanceModifier.height(8.dp))
@@ -110,12 +112,7 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
                 modifier = GlanceModifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Horizontal.End
             ) {
-                Button(
-                    text = refreshLabel,
-                    onClick = actionRunCallback<RefreshTrainStatusAction>(),
-                    colors = ButtonDefaults.filledTonalButtonColors(),
-                    modifier = GlanceModifier.padding(horizontal = 12.dp)
-                )
+                RefreshButton(refreshLabel)
             }
         }
     }
@@ -124,14 +121,19 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
     private fun RouteSectionContent(section: RouteSection) {
         Text(
             text = section.title,
-            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold),
-            color = GlanceTheme.colors.onSurface
+            style = TextStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = GlanceTheme.colors.onSurface
+            )
         )
         Spacer(modifier = GlanceModifier.height(4.dp))
         Text(
             text = section.body,
-            style = TextStyle(fontSize = 13.sp),
-            color = GlanceTheme.colors.onSurfaceVariant
+            style = TextStyle(
+                fontSize = 13.sp,
+                color = GlanceTheme.colors.onSurfaceVariant
+            )
         )
     }
 
@@ -144,6 +146,25 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
                 .height(1.dp)
                 .background(GlanceTheme.colors.outline)
         ) { }
+    }
+
+    @Composable
+    private fun RefreshButton(text: String) {
+        Box(
+            modifier = GlanceModifier
+                .background(GlanceTheme.colors.primaryContainer)
+                .clickable(actionRunCallback<RefreshTrainStatusAction>())
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = text,
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = GlanceTheme.colors.onPrimaryContainer
+                )
+            )
+        }
     }
 }
 

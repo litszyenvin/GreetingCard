@@ -30,7 +30,7 @@ class TrainRepository(
             if (services.length() == 0) return@withContext "No services returned."
 
             val destCrs = dest.uppercase()
-            val results = mutableListOf<String>()
+            val blocks = mutableListOf<String>() // each block = 2 lines per service
 
             for (i in 0 until services.length()) {
                 val service = services.getJSONObject(i)
@@ -52,7 +52,7 @@ class TrainRepository(
                 val nextDay = location.optBoolean("gbttBookedDepartureNextDay", false)
                 if (!isLaterThanNow(dep) && !nextDay) continue
 
-                // Destination description (for display only)
+                // Display destination name (for readability)
                 val destList = location.optJSONArray("destination")
                 val destDesc =
                     if (destList != null && destList.length() > 0)
@@ -60,9 +60,10 @@ class TrainRepository(
                     else "Unknown"
 
                 // Platform (may be missing)
-                val platform = location.optString("platform", "—")
+                val platformRaw = location.optString("platform", "").trim()
+                val platform = if (platformRaw.isBlank()) "—" else platformRaw
 
-                // Fetch per-service details to find arrival at our DEST (match by CRS first)
+                // Per-service details: find ARRIVAL at our DEST (prefer match by CRS)
                 val detail = runCatching { client.service(uid, runDate) }.getOrNull() ?: JSONObject()
                 val locations = detail.optArray("locations")
 
@@ -74,7 +75,7 @@ class TrainRepository(
                         if (crs.isNotEmpty()) {
                             crs == destCrs
                         } else {
-                            // Fallback to description match if 'crs' is absent
+                            // Fallback to description if 'crs' missing
                             loc.optString("description").equals(
                                 friendlyDestName(destCrs),
                                 ignoreCase = true
@@ -86,20 +87,26 @@ class TrainRepository(
                 if (!isValidHHMM(arrivalTime)) continue
 
                 val journey = elapsedMinutes(dep, arrivalTime!!)
+
                 val status = when {
                     isCancelled -> "Cancelled"
                     hasRealtime -> "Live"
                     else -> "Scheduled"
                 }
 
-                val label = if (results.isEmpty()) "Next train" else "Following"
-                results += "$label: $dep → $arrivalTime (${journey} min) • Platform $platform • $status • $destDesc"
+                // ---- Compact, two-line format ----
+                // Line 1: dep → arr (X min) • Platform N
+                val line1 = "$dep \u2192 $arrivalTime (${journey} min) • Platform $platform"
+                // Line 2: Destination • Status
+                val line2 = "$destDesc • $status"
 
-                if (results.size == take) break
+                blocks += "$line1\n$line2"
+
+                if (blocks.size == take) break
             }
 
-            if (results.isEmpty()) "No matching services found."
-            else "Station: $origin → $dest\n" + results.joinToString("\n")
+            if (blocks.isEmpty()) "No matching services found."
+            else "Station: $origin \u2192 $dest\n" + blocks.joinToString("\n\n")
         }
 
     /**

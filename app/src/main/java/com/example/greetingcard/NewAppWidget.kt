@@ -19,7 +19,7 @@ class NewAppWidget : AppWidgetProvider() {
         private const val ACTION_REFRESH = "com.example.greetingcard.action.REFRESH"
         private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-        // Two routes shown in widget as well
+        // Two routes
         private const val ORIGIN_A = "SAC"
         private const val DEST_A = "ZFD"
         private const val ORIGIN_B = "ZFD"
@@ -27,9 +27,15 @@ class NewAppWidget : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
-        // quick loading state on all instances
+        // Fill the widget area immediately with placeholders
         for (id in appWidgetIds) {
-            val views = buildViews(context, "Loading…")
+            val views = buildViews(
+                context = context,
+                titleA = "$ORIGIN_A → $DEST_A",
+                bodyA = "Loading…",
+                titleB = "$ORIGIN_B → $DEST_B",
+                bodyB = "Loading…"
+            )
             views.setOnClickPendingIntent(R.id.widget_refresh, refreshPI(context))
             manager.updateAppWidget(id, views)
         }
@@ -50,23 +56,41 @@ class NewAppWidget : AppWidgetProvider() {
 
         appScope.launch {
             val repo = TrainRepository()
-            val text = try {
-                val a = repo.getStatusText(ORIGIN_A, DEST_A, take = 3)
-                val b = repo.getStatusText(ORIGIN_B, DEST_B, take = 3)
-                "$a\n\n$b"
-            } catch (e: Exception) {
-                "Error: ${e.message ?: "unknown"}"
-            }
-            val views = buildViews(context, text)
+
+            val aRaw = runCatching { repo.getStatusText(ORIGIN_A, DEST_A, take = 4) }.getOrElse { "Error: ${it.message}" }
+            val bRaw = runCatching { repo.getStatusText(ORIGIN_B, DEST_B, take = 4) }.getOrElse { "Error: ${it.message}" }
+
+            val (aTitle, aBody) = splitHeaderBodyOrFallback(aRaw, "$ORIGIN_A → $DEST_A")
+            val (bTitle, bBody) = splitHeaderBodyOrFallback(bRaw, "$ORIGIN_B → $DEST_B")
+
+            val views = buildViews(context, aTitle, aBody, bTitle, bBody)
             views.setOnClickPendingIntent(R.id.widget_refresh, refreshPI(context))
             manager.updateAppWidget(ids, views)
         }
     }
 
-    private fun buildViews(context: Context, body: String): RemoteViews {
+    private fun splitHeaderBodyOrFallback(text: String, fallbackTitle: String): Pair<String, String> {
+        val lines = text.lines()
+        val header = lines.firstOrNull()?.takeIf { it.isNotBlank() } ?: fallbackTitle
+        val body = lines.drop(1).joinToString("\n").ifBlank { "No services found." }
+        // If the repository already included a header like "Station: X → Y", prefer the concise route for the title
+        val normalizedHeader = header.removePrefix("Station: ").trim().ifBlank { fallbackTitle }
+        return normalizedHeader to body
+    }
+
+    private fun buildViews(
+        context: Context,
+        titleA: String,
+        bodyA: String,
+        titleB: String,
+        bodyB: String
+    ): RemoteViews {
         return RemoteViews(context.packageName, R.layout.new_app_widget).apply {
             setTextViewText(R.id.widget_title, context.getString(R.string.widget_title))
-            setTextViewText(R.id.widget_text, body)
+            setTextViewText(R.id.route_a_title, titleA)
+            setTextViewText(R.id.widget_text_a, bodyA)
+            setTextViewText(R.id.route_b_title, titleB)
+            setTextViewText(R.id.widget_text_b, bodyB)
         }
     }
 

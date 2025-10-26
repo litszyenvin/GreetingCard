@@ -29,7 +29,9 @@ class TrainRepository(
             val services = search.optArray("services")
             if (services.length() == 0) return@withContext "No services returned."
 
+            val destCrs = dest.uppercase()
             val results = mutableListOf<String>()
+
             for (i in 0 until services.length()) {
                 val service = services.getJSONObject(i)
                 val location = service.optObj("locationDetail") ?: continue
@@ -50,23 +52,35 @@ class TrainRepository(
                 val nextDay = location.optBoolean("gbttBookedDepartureNextDay", false)
                 if (!isLaterThanNow(dep) && !nextDay) continue
 
-                // Destination description
+                // Destination description (for display only)
                 val destList = location.optJSONArray("destination")
                 val destDesc =
                     if (destList != null && destList.length() > 0)
                         destList.getJSONObject(0).optString("description", "Unknown")
                     else "Unknown"
 
-                // Platform
+                // Platform (may be missing)
                 val platform = location.optString("platform", "—")
 
-                // Per-service details for arrival time at our friendly destination name
+                // Fetch per-service details to find arrival at our DEST (match by CRS first)
                 val detail = runCatching { client.service(uid, runDate) }.getOrNull() ?: JSONObject()
                 val locations = detail.optArray("locations")
+
                 val arrivalTime = (0 until locations.length())
                     .asSequence()
                     .map { locations.getJSONObject(it) }
-                    .firstOrNull { it.optString("description") == friendlyDestName(dest) }
+                    .firstOrNull { loc ->
+                        val crs = loc.optString("crs").uppercase()
+                        if (crs.isNotEmpty()) {
+                            crs == destCrs
+                        } else {
+                            // Fallback to description match if 'crs' is absent
+                            loc.optString("description").equals(
+                                friendlyDestName(destCrs),
+                                ignoreCase = true
+                            )
+                        }
+                    }
                     ?.let { it.optString("realtimeArrival", it.optString("gbttBookedArrival")) }
 
                 if (!isValidHHMM(arrivalTime)) continue
@@ -88,9 +102,16 @@ class TrainRepository(
             else "Station: $origin → $dest\n" + results.joinToString("\n")
         }
 
-    private fun friendlyDestName(destCrs: String): String = when (destCrs.uppercase()) {
+    /**
+     * Human-readable station name fallback for description matching.
+     * We prefer matching by locations[].crs above; this is only used if 'crs' is missing.
+     */
+    private fun friendlyDestName(destCrsUpper: String): String = when (destCrsUpper) {
         "ZFD" -> "Farringdon"
-        else -> destCrs
+        "SAC" -> "St Albans City"
+        // Add more as needed:
+        // "STP" -> "London St Pancras International"
+        else -> destCrsUpper
     }
 
     private fun isValidHHMM(value: String?): Boolean =

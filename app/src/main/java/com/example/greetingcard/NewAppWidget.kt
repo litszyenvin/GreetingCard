@@ -13,20 +13,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/**
- * Template-named widget provider that fetches live RTT data.
- */
 class NewAppWidget : AppWidgetProvider() {
 
     companion object {
         private const val ACTION_REFRESH = "com.example.greetingcard.action.REFRESH"
-        private const val DEFAULT_ORIGIN = "SAC"
-        private const val DEFAULT_DEST = "ZFD"
         private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        // Two routes shown in widget as well
+        private const val ORIGIN_A = "SAC"
+        private const val DEST_A = "ZFD"
+        private const val ORIGIN_B = "ZFD"
+        private const val DEST_B = "SAC"
     }
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
-        // show quick loading while we fetch
+        // quick loading state on all instances
         for (id in appWidgetIds) {
             val views = buildViews(context, "Loading…")
             views.setOnClickPendingIntent(R.id.widget_refresh, refreshPI(context))
@@ -50,7 +51,9 @@ class NewAppWidget : AppWidgetProvider() {
         appScope.launch {
             val repo = TrainRepository()
             val text = try {
-                repo.getStatusText(DEFAULT_ORIGIN, DEFAULT_DEST, take = 4)
+                val a = repo.getStatusText(ORIGIN_A, DEST_A, take = 3)
+                val b = repo.getStatusText(ORIGIN_B, DEST_B, take = 3)
+                "$a\n\n$b"
             } catch (e: Exception) {
                 "Error: ${e.message ?: "unknown"}"
             }

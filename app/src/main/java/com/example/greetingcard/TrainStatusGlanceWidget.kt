@@ -16,7 +16,6 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
-import androidx.glance.action.clickable
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
@@ -28,6 +27,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.material3.Button
 import com.example.greetingcard.data.TrainRepository
 
 class TrainStatusGlanceWidget : GlanceAppWidget() {
@@ -150,21 +150,12 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
 
     @Composable
     private fun RefreshButton(text: String) {
-        Box(
+        Button(
+            text = text,
+            onClick = actionRunCallback<RefreshTrainStatusAction>(),
             modifier = GlanceModifier
-                .background(GlanceTheme.colors.primaryContainer)
-                .clickable(actionRunCallback<RefreshTrainStatusAction>())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Text(
-                text = text,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = GlanceTheme.colors.onPrimaryContainer
-                )
-            )
-        }
+                .padding(top = 4.dp)
+        )
     }
 }
 

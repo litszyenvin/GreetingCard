@@ -11,6 +11,7 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.appWidgetBackground
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -27,7 +28,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.clickable
+import androidx.glance.action.clickable
 import com.example.greetingcard.data.TrainRepository
 
 class TrainStatusGlanceWidget : GlanceAppWidget() {
@@ -152,8 +153,9 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
     private fun RefreshButton(text: String) {
         Box(
             modifier = GlanceModifier
-                .clickable(actionRunCallback<RefreshTrainStatusAction>())
                 .background(GlanceTheme.colors.primaryContainer)
+                .cornerRadius(16.dp)
+                .clickable(actionRunCallback<RefreshTrainStatusAction>())
                 .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(

@@ -12,6 +12,10 @@ import kotlin.math.max
 class TrainRepository(
     private val client: RttClient = RttClient
 ) {
+    fun invalidateNetwork() {
+        client.invalidate()
+    }
+
     /**
      * @param origin 3-letter CRS (e.g. "SAC")
      * @param dest   3-letter CRS (e.g. "ZFD")

@@ -43,6 +43,7 @@ class TrainViewModel(
     }
 
     fun onNetworkAvailable() {
+        repo.invalidateNetwork()
         scheduledRetry?.cancel()
         if (_statusText.value.startsWith("Error")) {
             viewModelScope.launch {

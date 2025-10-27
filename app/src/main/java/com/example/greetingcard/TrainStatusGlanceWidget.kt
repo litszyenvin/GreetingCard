@@ -19,6 +19,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -28,7 +29,8 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.action.clickable
+import androidx.glance.material3.Button
+import androidx.glance.material3.ButtonDefaults
 import com.example.greetingcard.data.TrainRepository
 
 class TrainStatusGlanceWidget : GlanceAppWidget() {
@@ -111,8 +113,9 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
 
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Horizontal.End
+                verticalAlignment = Alignment.Vertical.CenterVertically
             ) {
+                Spacer(modifier = GlanceModifier.defaultWeight())
                 RefreshButton(refreshLabel)
             }
         }
@@ -151,22 +154,12 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
 
     @Composable
     private fun RefreshButton(text: String) {
-        Box(
-            modifier = GlanceModifier
-                .background(GlanceTheme.colors.primaryContainer)
-                .cornerRadius(16.dp)
-                .clickable(actionRunCallback<RefreshTrainStatusAction>())
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(
-                text = text,
-                style = TextStyle(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = GlanceTheme.colors.onPrimaryContainer
-                )
-            )
-        }
+        Button(
+            text = text,
+            onClick = actionRunCallback<RefreshTrainStatusAction>(),
+            modifier = GlanceModifier.cornerRadius(16.dp),
+            colors = ButtonDefaults.primaryButtonColors()
+        )
     }
 }
 

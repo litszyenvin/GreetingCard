@@ -27,7 +27,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.material3.Button
+import androidx.glance.clickable
 import com.example.greetingcard.data.TrainRepository
 
 class TrainStatusGlanceWidget : GlanceAppWidget() {
@@ -150,12 +150,21 @@ class TrainStatusGlanceWidget : GlanceAppWidget() {
 
     @Composable
     private fun RefreshButton(text: String) {
-        Button(
-            text = text,
-            onClick = actionRunCallback<RefreshTrainStatusAction>(),
+        Box(
             modifier = GlanceModifier
-                .padding(top = 4.dp)
-        )
+                .clickable(actionRunCallback<RefreshTrainStatusAction>())
+                .background(GlanceTheme.colors.primaryContainer)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = text,
+                style = TextStyle(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = GlanceTheme.colors.onPrimaryContainer
+                )
+            )
+        }
     }
 }
 

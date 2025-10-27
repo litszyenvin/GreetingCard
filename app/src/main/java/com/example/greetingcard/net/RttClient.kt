@@ -52,14 +52,16 @@ object RttClient {
 
     private fun resilientDns(): Dns {
         val system = Dns.SYSTEM
-        return Dns { hostname ->
-            try {
-                system.lookup(hostname)
-            } catch (e: UnknownHostException) {
-                try {
-                    dohDns.lookup(hostname)
-                } catch (fallback: Exception) {
-                    throw e
+        return object : Dns {
+            override fun lookup(hostname: String): List<InetAddress> {
+                return try {
+                    system.lookup(hostname)
+                } catch (e: UnknownHostException) {
+                    try {
+                        dohDns.lookup(hostname)
+                    } catch (fallback: Exception) {
+                        throw e
+                    }
                 }
             }
         }

@@ -87,4 +87,5 @@ dependencies {
 
     // OkHttp (networking)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp-dnsoverhttps:4.12.0")
 }

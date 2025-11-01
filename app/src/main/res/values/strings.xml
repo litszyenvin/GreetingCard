@@ -2,5 +2,7 @@
 <resources>
     <string name="app_name">Train Tracker</string>
     <string name="widget_title">Train Tracker</string>
+    <string name="widget_subtitle">Live departures at a glance</string>
+    <string name="widget_status_live">Live</string>
     <string name="widget_refresh">Refresh</string>
 </resources>

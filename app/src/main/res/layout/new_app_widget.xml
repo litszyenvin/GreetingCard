@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- RemoteViews-safe layout that fills the cell and avoids unsupported views -->
+<!-- Placeholder layout shown before Glance content is rendered. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:orientation="vertical"
-    android:padding="10dp"
+    android:padding="12dp"
     android:background="@drawable/widget_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Widget header -->
     <TextView
         android:id="@+id/widget_title"
         android:text="@string/widget_title"
@@ -18,7 +17,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- Route A title -->
     <TextView
         android:id="@+id/route_a_title"
         android:text="SAC → ZFD"
@@ -29,30 +27,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- Route A body fills available space -->
     <TextView
         android:id="@+id/widget_text_a"
         android:text="Loading…"
         android:textSize="13sp"
-        android:typeface="monospace"
-        android:lineSpacingExtra="2dp"
         android:includeFontPadding="false"
-        android:maxLines="50"
-        android:ellipsize="end"
-        android:gravity="top|start"
         android:layout_marginTop="4dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content" />
 
-    <!-- Divider (ImageView is allowed in RemoteViews) -->
-    <ImageView
+    <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="8dp"
         android:background="#22000000" />
 
-    <!-- Route B title -->
     <TextView
         android:id="@+id/route_b_title"
         android:text="ZFD → SAC"
@@ -63,28 +52,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- Route B body fills remaining space -->
     <TextView
         android:id="@+id/widget_text_b"
         android:text="Loading…"
         android:textSize="13sp"
-        android:typeface="monospace"
-        android:lineSpacingExtra="2dp"
         android:includeFontPadding="false"
-        android:maxLines="50"
-        android:ellipsize="end"
-        android:gravity="top|start"
         android:layout_marginTop="4dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content" />
 
-    <!-- Refresh button anchored at bottom -->
-    <Button
-        android:id="@+id/widget_refresh"
+    <TextView
+        android:id="@+id/widget_refresh_hint"
         android:text="@string/widget_refresh"
-        android:layout_marginTop="10dp"
-        android:layout_gravity="end"
-        android:layout_width="wrap_content"
+        android:textStyle="bold"
+        android:textSize="12sp"
+        android:includeFontPadding="false"
+        android:gravity="end"
+        android:layout_marginTop="12dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

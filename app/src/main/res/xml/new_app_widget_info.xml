@@ -6,5 +6,6 @@
     android:minResizeHeight="110dp"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/new_app_widget"
+    android:previewLayout="@layout/new_app_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

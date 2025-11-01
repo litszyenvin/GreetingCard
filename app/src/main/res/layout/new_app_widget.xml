@@ -13,10 +13,13 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@drawable/widget_header_bg"
-        android:padding="12dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp">
+        android:layout_marginBottom="16dp">
 
         <ImageView
             android:id="@+id/widget_header_icon"
@@ -38,9 +41,9 @@
             <TextView
                 android:id="@+id/widget_title"
                 android:text="@string/widget_title"
-                android:textStyle="bold"
-                android:textSize="16sp"
                 android:textColor="#FFFFFFFF"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-medium"
                 android:includeFontPadding="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -62,7 +65,7 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             android:textSize="11sp"
-            android:textColor="#FFFFFFFF"
+            android:textColor="@color/light_blue_900"
             android:includeFontPadding="false"
             android:background="@drawable/widget_badge_bg"
             android:layout_width="wrap_content"
@@ -73,18 +76,21 @@
     <LinearLayout
         android:orientation="vertical"
         android:background="@drawable/widget_section_bg"
-        android:padding="12dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginBottom="10dp">
+        android:layout_marginBottom="12dp">
 
         <TextView
             android:id="@+id/route_a_title"
             android:text="SAC → ZFD"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="#FF01579B"
+            android:textColor="@color/light_blue_900"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
             android:includeFontPadding="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -92,15 +98,14 @@
         <TextView
             android:id="@+id/widget_text_a"
             android:text="Loading…"
-            android:textSize="13sp"
-            android:textColor="#FF37474F"
-            android:typeface="monospace"
+            android:textSize="14sp"
+            android:textColor="#DE000000"
             android:lineSpacingExtra="2dp"
             android:includeFontPadding="false"
             android:maxLines="50"
             android:ellipsize="end"
             android:gravity="top|start"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
@@ -110,18 +115,21 @@
     <LinearLayout
         android:orientation="vertical"
         android:background="@drawable/widget_section_bg"
-        android:padding="12dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginBottom="12dp">
+        android:layout_marginBottom="16dp">
 
         <TextView
             android:id="@+id/route_b_title"
             android:text="ZFD → SAC"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="#FF01579B"
+            android:textColor="@color/light_blue_900"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
             android:includeFontPadding="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -129,15 +137,14 @@
         <TextView
             android:id="@+id/widget_text_b"
             android:text="Loading…"
-            android:textSize="13sp"
-            android:textColor="#FF37474F"
-            android:typeface="monospace"
+            android:textSize="14sp"
+            android:textColor="#DE000000"
             android:lineSpacingExtra="2dp"
             android:includeFontPadding="false"
             android:maxLines="50"
             android:ellipsize="end"
             android:gravity="top|start"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
@@ -149,9 +156,10 @@
         android:text="@string/widget_refresh"
         android:textAllCaps="false"
         android:textStyle="bold"
-        android:textColor="#FFFFFFFF"
+        android:textColor="@android:color/white"
         android:background="@drawable/widget_button_bg"
         android:layout_gravity="end"
+        android:layout_marginTop="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>

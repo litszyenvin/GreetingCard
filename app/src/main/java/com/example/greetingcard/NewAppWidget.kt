@@ -86,7 +86,6 @@ class NewAppWidget : AppWidgetProvider() {
         bodyB: String
     ): RemoteViews {
         return RemoteViews(context.packageName, R.layout.new_app_widget).apply {
-            setTextViewText(R.id.widget_title, context.getString(R.string.widget_title))
             setTextViewText(R.id.route_a_title, titleA)
             setTextViewText(R.id.widget_text_a, bodyA)
             setTextViewText(R.id.route_b_title, titleB)

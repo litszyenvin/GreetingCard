@@ -1,90 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- RemoteViews-safe layout that fills the cell and avoids unsupported views -->
+<!-- RemoteViews-safe layout with modern styling -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:orientation="vertical"
-    android:padding="10dp"
     android:background="@drawable/widget_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Widget header -->
-    <TextView
-        android:id="@+id/widget_title"
-        android:text="@string/widget_title"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:includeFontPadding="false"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <!-- Route A title -->
-    <TextView
-        android:id="@+id/route_a_title"
-        android:text="SAC → ZFD"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:includeFontPadding="false"
-        android:layout_marginTop="8dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <!-- Route A body fills available space -->
-    <TextView
-        android:id="@+id/widget_text_a"
-        android:text="Loading…"
-        android:textSize="13sp"
-        android:typeface="monospace"
-        android:lineSpacingExtra="2dp"
-        android:includeFontPadding="false"
-        android:maxLines="50"
-        android:ellipsize="end"
-        android:gravity="top|start"
-        android:layout_marginTop="4dp"
+    <!-- Route A section -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:background="@drawable/widget_section_bg"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginBottom="12dp">
 
-    <!-- Divider (ImageView is allowed in RemoteViews) -->
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="#22000000" />
+        <TextView
+            android:id="@+id/route_a_title"
+            android:text="SAC → ZFD"
+            android:textColor="@color/widget_grey_accent"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <!-- Route B title -->
-    <TextView
-        android:id="@+id/route_b_title"
-        android:text="ZFD → SAC"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:includeFontPadding="false"
-        android:layout_marginTop="8dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/widget_text_a"
+            android:text="Loading…"
+            android:textSize="14sp"
+            android:textColor="#DE000000"
+            android:lineSpacingExtra="2dp"
+            android:includeFontPadding="false"
+            android:maxLines="50"
+            android:ellipsize="end"
+            android:gravity="top|start"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
 
-    <!-- Route B body fills remaining space -->
-    <TextView
-        android:id="@+id/widget_text_b"
-        android:text="Loading…"
-        android:textSize="13sp"
-        android:typeface="monospace"
-        android:lineSpacingExtra="2dp"
-        android:includeFontPadding="false"
-        android:maxLines="50"
-        android:ellipsize="end"
-        android:gravity="top|start"
-        android:layout_marginTop="4dp"
+    <!-- Route B section -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:background="@drawable/widget_section_bg"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp">
 
-    <!-- Refresh button anchored at bottom -->
+        <TextView
+            android:id="@+id/route_b_title"
+            android:text="ZFD → SAC"
+            android:textColor="@color/widget_grey_accent"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/widget_text_b"
+            android:text="Loading…"
+            android:textSize="14sp"
+            android:textColor="#DE000000"
+            android:lineSpacingExtra="2dp"
+            android:includeFontPadding="false"
+            android:maxLines="50"
+            android:ellipsize="end"
+            android:gravity="top|start"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <!-- Refresh button -->
     <Button
         android:id="@+id/widget_refresh"
         android:text="@string/widget_refresh"
-        android:layout_marginTop="10dp"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@drawable/widget_button_bg"
         android:layout_gravity="end"
+        android:layout_marginTop="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>

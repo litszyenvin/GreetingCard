@@ -27,6 +27,7 @@ class NewAppWidget : AppWidgetProvider() {
 
     companion object {
         private const val ACTION_REFRESH = "com.example.greetingcard.action.REFRESH"
+        private const val ACTION_SUPPRESS_CLICK = "com.example.greetingcard.action.SUPPRESS"
         private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         // Two routes
@@ -101,6 +102,9 @@ class NewAppWidget : AppWidgetProvider() {
             setRemoteAdapter(R.id.widget_list_b, serviceIntent(context, appWidgetId, ROUTE_ID_B, ORIGIN_B, DEST_B))
             setEmptyView(R.id.widget_list_a, R.id.widget_empty_a)
             setEmptyView(R.id.widget_list_b, R.id.widget_empty_b)
+            setOnClickPendingIntent(R.id.widget_root, suppressClickPI(context))
+            setPendingIntentTemplate(R.id.widget_list_a, suppressClickPI(context))
+            setPendingIntentTemplate(R.id.widget_list_b, suppressClickPI(context))
             setOnClickPendingIntent(R.id.widget_refresh, refreshPI(context))
         }
     }
@@ -131,6 +135,14 @@ class NewAppWidget : AppWidgetProvider() {
         val intent = Intent(context, NewAppWidget::class.java).apply { action = ACTION_REFRESH }
         return PendingIntent.getBroadcast(
             context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun suppressClickPI(context: Context): PendingIntent {
+        val intent = Intent(context, NewAppWidget::class.java).apply { action = ACTION_SUPPRESS_CLICK }
+        return PendingIntent.getBroadcast(
+            context, 1, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }

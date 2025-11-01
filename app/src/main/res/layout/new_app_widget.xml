@@ -30,20 +30,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/widget_text_a"
-            android:text="Loading…"
-            android:textSize="14sp"
-            android:textColor="#DE000000"
-            android:lineSpacingExtra="2dp"
-            android:includeFontPadding="false"
-            android:maxLines="50"
-            android:ellipsize="end"
-            android:gravity="top|start"
-            android:layout_marginTop="8dp"
+        <ScrollView
+            android:id="@+id/route_a_scroll"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:maxHeight="@dimen/widget_train_scroll_height"
+            android:scrollbars="vertical">
+
+            <TextView
+                android:id="@+id/widget_text_a"
+                android:text="Loading…"
+                android:textSize="14sp"
+                android:textColor="#DE000000"
+                android:lineSpacingExtra="2dp"
+                android:includeFontPadding="false"
+                android:ellipsize="end"
+                android:gravity="top|start"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
     </LinearLayout>
 
     <!-- Route B section -->
@@ -69,20 +75,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/widget_text_b"
-            android:text="Loading…"
-            android:textSize="14sp"
-            android:textColor="#DE000000"
-            android:lineSpacingExtra="2dp"
-            android:includeFontPadding="false"
-            android:maxLines="50"
-            android:ellipsize="end"
-            android:gravity="top|start"
-            android:layout_marginTop="8dp"
+        <ScrollView
+            android:id="@+id/route_b_scroll"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:maxHeight="@dimen/widget_train_scroll_height"
+            android:scrollbars="vertical">
+
+            <TextView
+                android:id="@+id/widget_text_b"
+                android:text="Loading…"
+                android:textSize="14sp"
+                android:textColor="#DE000000"
+                android:lineSpacingExtra="2dp"
+                android:includeFontPadding="false"
+                android:ellipsize="end"
+                android:gravity="top|start"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
     </LinearLayout>
 
     <!-- Refresh button -->

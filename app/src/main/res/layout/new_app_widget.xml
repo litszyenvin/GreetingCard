@@ -30,27 +30,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ScrollView
+        <ListView
+            android:id="@+id/widget_list_a"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
             android:layout_weight="1"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp"
+            android:scrollbarStyle="outsideOverlay"
             android:fadeScrollbars="false"
-            android:scrollbarStyle="outsideOverlay">
+            android:clipToPadding="false" />
 
-            <TextView
-                android:id="@+id/widget_text_a"
-                android:text="Loading…"
-                android:textSize="14sp"
-                android:textColor="#DE000000"
-                android:lineSpacingExtra="2dp"
-                android:includeFontPadding="false"
-                android:maxLines="50"
-                android:ellipsize="end"
-                android:gravity="top|start"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </ScrollView>
+        <TextView
+            android:id="@+id/widget_empty_a"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Loading…"
+            android:textColor="#99000000"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:includeFontPadding="false" />
     </LinearLayout>
 
     <!-- Route B section -->
@@ -76,27 +77,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ScrollView
+        <ListView
+            android:id="@+id/widget_list_b"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
             android:layout_weight="1"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp"
+            android:scrollbarStyle="outsideOverlay"
             android:fadeScrollbars="false"
-            android:scrollbarStyle="outsideOverlay">
+            android:clipToPadding="false" />
 
-            <TextView
-                android:id="@+id/widget_text_b"
-                android:text="Loading…"
-                android:textSize="14sp"
-                android:textColor="#DE000000"
-                android:lineSpacingExtra="2dp"
-                android:includeFontPadding="false"
-                android:maxLines="50"
-                android:ellipsize="end"
-                android:gravity="top|start"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </ScrollView>
+        <TextView
+            android:id="@+id/widget_empty_b"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Loading…"
+            android:textColor="#99000000"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:includeFontPadding="false" />
     </LinearLayout>
 
     <!-- Refresh button -->

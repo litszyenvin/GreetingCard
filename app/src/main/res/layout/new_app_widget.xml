@@ -7,71 +7,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header with branding -->
-    <LinearLayout
-        android:id="@+id/widget_header"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/widget_header_bg"
-        android:paddingLeft="16dp"
-        android:paddingTop="16dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
-
-        <ImageView
-            android:id="@+id/widget_header_icon"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/widget_header_icon_bg"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_dialog_map"
-            android:scaleType="centerInside"
-            android:tint="#FFFFFFFF" />
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1">
-
-            <TextView
-                android:id="@+id/widget_title"
-                android:text="@string/widget_title"
-                android:textColor="#FFFFFFFF"
-                android:textSize="18sp"
-                android:fontFamily="sans-serif-medium"
-                android:includeFontPadding="false"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/widget_subtitle"
-                android:text="@string/widget_subtitle"
-                android:textSize="12sp"
-                android:textColor="#B3FFFFFF"
-                android:includeFontPadding="false"
-                android:layout_marginTop="2dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/widget_status"
-            android:text="@string/widget_status_live"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            android:textSize="11sp"
-            android:textColor="@color/light_blue_900"
-            android:includeFontPadding="false"
-            android:background="@drawable/widget_badge_bg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
     <!-- Route A section -->
     <LinearLayout
         android:orientation="vertical"
@@ -88,7 +23,7 @@
         <TextView
             android:id="@+id/route_a_title"
             android:text="SAC → ZFD"
-            android:textColor="@color/light_blue_900"
+            android:textColor="@color/widget_grey_accent"
             android:textSize="15sp"
             android:fontFamily="sans-serif-medium"
             android:includeFontPadding="false"
@@ -127,7 +62,7 @@
         <TextView
             android:id="@+id/route_b_title"
             android:text="ZFD → SAC"
-            android:textColor="@color/light_blue_900"
+            android:textColor="@color/widget_grey_accent"
             android:textSize="15sp"
             android:fontFamily="sans-serif-medium"
             android:includeFontPadding="false"

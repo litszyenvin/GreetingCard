@@ -8,6 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="widget_grey_surface">#FFF1F3F4</color>
-    <color name="widget_grey_accent">#FF5F6368</color>
-    <color name="widget_grey_accent_pressed">#FF3C4043</color>
+    <color name="widget_grey_accent">#757575</color>
+    <color name="widget_grey_accent_pressed">#424242</color>
 </resources>

@@ -57,8 +57,8 @@ class NewAppWidget : AppWidgetProvider() {
         appScope.launch {
             val repo = TrainRepository()
 
-            val aRaw = runCatching { repo.getStatusText(ORIGIN_A, DEST_A, take = 4) }.getOrElse { "Error: ${it.message}" }
-            val bRaw = runCatching { repo.getStatusText(ORIGIN_B, DEST_B, take = 4) }.getOrElse { "Error: ${it.message}" }
+            val aRaw = runCatching { repo.getStatusText(ORIGIN_A, DEST_A, take = 8) }.getOrElse { "Error: ${it.message}" }
+            val bRaw = runCatching { repo.getStatusText(ORIGIN_B, DEST_B, take = 8) }.getOrElse { "Error: ${it.message}" }
 
             val (aTitle, aBody) = splitHeaderBodyOrFallback(aRaw, "$ORIGIN_A → $DEST_A")
             val (bTitle, bBody) = splitHeaderBodyOrFallback(bRaw, "$ORIGIN_B → $DEST_B")

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
+import androidx.core.content.ContextCompat
 import com.example.greetingcard.data.TrainRepository
 import com.example.greetingcard.widget.EXTRA_DEST
 import com.example.greetingcard.widget.EXTRA_FAST_ONLY
@@ -134,6 +135,16 @@ class NewAppWidget : AppWidgetProvider() {
         } else {
             context.getString(R.string.widget_fast_only_off)
         }
+        val toggleBackground = if (fastOnly) {
+            R.drawable.widget_chip_toggle_bg_checked
+        } else {
+            R.drawable.widget_chip_toggle_bg_unchecked
+        }
+        val toggleTextColor = if (fastOnly) {
+            ContextCompat.getColor(context, android.R.color.white)
+        } else {
+            ContextCompat.getColor(context, R.color.widget_grey_accent)
+        }
         return RemoteViews(context.packageName, R.layout.new_app_widget).apply {
             setTextViewText(R.id.route_a_title, routeA.title)
             setTextViewText(R.id.route_b_title, routeB.title)
@@ -154,7 +165,8 @@ class NewAppWidget : AppWidgetProvider() {
             setPendingIntentTemplate(R.id.widget_list_b, suppressClickPI(context))
             setOnClickPendingIntent(R.id.widget_refresh, refreshPI(context))
             setTextViewText(R.id.widget_fast_toggle, toggleLabel)
-            setBoolean(R.id.widget_fast_toggle, "setActivated", fastOnly)
+            setInt(R.id.widget_fast_toggle, "setBackgroundResource", toggleBackground)
+            setTextColor(R.id.widget_fast_toggle, toggleTextColor)
             setContentDescription(R.id.widget_fast_toggle, toggleContentDescription)
             setOnClickPendingIntent(R.id.widget_fast_toggle, toggleFastPI(context))
         }

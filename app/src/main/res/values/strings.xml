@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">Train Tracker</string>
     <string name="widget_refresh">Refresh</string>
-    <string name="widget_fast_only_label">Fast trains only</string>
     <string name="widget_fast_only_on">Fast trains only: On</string>
     <string name="widget_fast_only_off">Fast trains only: Off</string>
 </resources>

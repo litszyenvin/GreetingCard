@@ -112,7 +112,7 @@
 
         <TextView
             android:id="@+id/widget_fast_toggle"
-            android:text="@string/widget_fast_only_label"
+            android:text="@string/widget_fast_only_off"
             android:textStyle="bold"
             android:textColor="@color/widget_grey_accent"
             android:background="@drawable/widget_chip_toggle_bg_unchecked"

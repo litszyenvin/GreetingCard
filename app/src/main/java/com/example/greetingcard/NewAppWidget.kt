@@ -129,8 +129,7 @@ class NewAppWidget : AppWidgetProvider() {
         routeB: WidgetRouteState,
         fastOnly: Boolean
     ): RemoteViews {
-        val toggleLabel = context.getString(R.string.widget_fast_only_label)
-        val toggleContentDescription = if (fastOnly) {
+        val toggleStateText = if (fastOnly) {
             context.getString(R.string.widget_fast_only_on)
         } else {
             context.getString(R.string.widget_fast_only_off)
@@ -164,10 +163,10 @@ class NewAppWidget : AppWidgetProvider() {
             setPendingIntentTemplate(R.id.widget_list_a, suppressClickPI(context))
             setPendingIntentTemplate(R.id.widget_list_b, suppressClickPI(context))
             setOnClickPendingIntent(R.id.widget_refresh, refreshPI(context))
-            setTextViewText(R.id.widget_fast_toggle, toggleLabel)
+            setTextViewText(R.id.widget_fast_toggle, toggleStateText)
             setInt(R.id.widget_fast_toggle, "setBackgroundResource", toggleBackground)
             setTextColor(R.id.widget_fast_toggle, toggleTextColor)
-            setContentDescription(R.id.widget_fast_toggle, toggleContentDescription)
+            setContentDescription(R.id.widget_fast_toggle, toggleStateText)
             setOnClickPendingIntent(R.id.widget_fast_toggle, toggleFastPI(context))
         }
     }

@@ -1,5 +1,8 @@
 package com.example.greetingcard.widget
 
+import com.example.greetingcard.data.TrainRepository
+import kotlinx.coroutines.delay
+
 const val ROUTE_ID_A = "route_a"
 const val ROUTE_ID_B = "route_b"
 const val EXTRA_ROUTE_ID = "com.example.greetingcard.widget.EXTRA_ROUTE_ID"
@@ -44,6 +47,52 @@ object WidgetDataCache {
     fun clear() {
         routeStates.clear()
     }
+}
+
+/** Attempt to fetch widget data with retries and fall back to the last good state. */
+suspend fun fetchWidgetRouteState(
+    repo: TrainRepository,
+    origin: String,
+    dest: String,
+    take: Int,
+    fastOnly: Boolean,
+    fallbackTitle: String,
+    previousState: WidgetRouteState? = null
+): WidgetRouteState {
+    var lastErrorMessage: String? = null
+
+    repeat(WIDGET_FETCH_ATTEMPTS) { attempt ->
+        val result = runCatching { repo.getStatusText(origin, dest, take, fastOnly) }
+        val raw = result.getOrNull()
+        val parsed = raw?.let { parseWidgetRouteState(it, fallbackTitle) }
+        val isError = raw == null || raw.trim().startsWith("Error", ignoreCase = true)
+
+        if (!isError && parsed != null) {
+            return parsed
+        }
+
+        lastErrorMessage = parsed?.emptyMessage
+            ?: result.exceptionOrNull()?.message?.let { "Error: $it" }
+            ?: GENERIC_ERROR_MESSAGE
+
+        if (attempt < WIDGET_FETCH_ATTEMPTS - 1) {
+            delay(WIDGET_FETCH_RETRY_DELAY_MS * (attempt + 1))
+        }
+    }
+
+    previousState?.let { previous ->
+        if (previous.services.isNotEmpty()) {
+            val warningTitle = addWarningIndicator(previous.title)
+            return previous.copy(title = warningTitle)
+        }
+    }
+
+    val message = lastErrorMessage ?: GENERIC_ERROR_MESSAGE
+    return WidgetRouteState(
+        title = fallbackTitle,
+        services = emptyList(),
+        emptyMessage = message
+    )
 }
 
 /**
@@ -107,3 +156,10 @@ private fun ensureArrowDirection(value: String, fallbackTitle: String): String {
     val normalized = value.replace("-", "→")
     return if ('→' in normalized) normalized else fallbackTitle
 }
+
+private fun addWarningIndicator(title: String): String =
+    if (title.contains("⚠")) title else "$title ⚠"
+
+private const val WIDGET_FETCH_ATTEMPTS = 3
+private const val WIDGET_FETCH_RETRY_DELAY_MS = 500L
+private const val GENERIC_ERROR_MESSAGE = "Error: Unable to load services."

@@ -18,7 +18,7 @@ import com.example.greetingcard.widget.ROUTE_ID_A
 import com.example.greetingcard.widget.ROUTE_ID_B
 import com.example.greetingcard.widget.WidgetDataCache
 import com.example.greetingcard.widget.WidgetRouteState
-import com.example.greetingcard.widget.parseWidgetRouteState
+import com.example.greetingcard.widget.fetchWidgetRouteState
 import com.example.greetingcard.widget.WidgetService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -101,13 +101,27 @@ class NewAppWidget : AppWidgetProvider() {
             val repo = TrainRepository()
             val fastOnly = isFastOnlyEnabled(context)
 
-            val aRaw = runCatching { repo.getStatusText(ORIGIN_A, DEST_A, take = 8, fastOnly = fastOnly) }
-                .getOrElse { "Error: ${it.message}" }
-            val bRaw = runCatching { repo.getStatusText(ORIGIN_B, DEST_B, take = 8, fastOnly = fastOnly) }
-                .getOrElse { "Error: ${it.message}" }
+            val previousA = WidgetDataCache.get(ROUTE_ID_A, fastOnly)
+            val previousB = WidgetDataCache.get(ROUTE_ID_B, fastOnly)
 
-            val routeAState = parseWidgetRouteState(aRaw, "$ORIGIN_A → $DEST_A")
-            val routeBState = parseWidgetRouteState(bRaw, "$ORIGIN_B → $DEST_B")
+            val routeAState = fetchWidgetRouteState(
+                repo = repo,
+                origin = ORIGIN_A,
+                dest = DEST_A,
+                take = 8,
+                fastOnly = fastOnly,
+                fallbackTitle = "$ORIGIN_A → $DEST_A",
+                previousState = previousA
+            )
+            val routeBState = fetchWidgetRouteState(
+                repo = repo,
+                origin = ORIGIN_B,
+                dest = DEST_B,
+                take = 8,
+                fastOnly = fastOnly,
+                fallbackTitle = "$ORIGIN_B → $DEST_B",
+                previousState = previousB
+            )
 
             WidgetDataCache.update(ROUTE_ID_A, fastOnly, routeAState)
             WidgetDataCache.update(ROUTE_ID_B, fastOnly, routeBState)

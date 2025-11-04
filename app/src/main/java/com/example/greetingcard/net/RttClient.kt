@@ -83,8 +83,35 @@ object RttClient {
 
     private fun getJson(url: HttpUrl): JSONObject {
         val request = Request.Builder().url(url).get().build()
+        var lastError: Throwable? = null
 
-        val response = runCatching { primaryClient.newCall(request).execute() }
+        repeat(REQUEST_ATTEMPTS) { attempt ->
+            try {
+                executeWithFallback(request).use { resp: Response ->
+                    if (!resp.isSuccessful) throw IllegalStateException("HTTP ${resp.code}")
+                    val body = resp.body?.string().orEmpty()
+                    return JSONObject(body)
+                }
+            } catch (error: Throwable) {
+                lastError = error
+                if (attempt < REQUEST_ATTEMPTS - 1) {
+                    if (error is java.io.IOException) {
+                        primaryClient.connectionPool.evictAll()
+                    }
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS * (attempt + 1))
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
+                }
+            }
+        }
+
+        throw lastError ?: IllegalStateException("Unknown error fetching ${url.encodedPath}")
+    }
+
+    private fun executeWithFallback(request: Request): Response =
+        runCatching { primaryClient.newCall(request).execute() }
             .recoverCatching { error ->
                 if (isDnsFailure(error)) {
                     dohClient.newCall(request).execute()
@@ -94,18 +121,14 @@ object RttClient {
             }
             .getOrElse { throw it }
 
-        response.use { resp: Response ->
-            if (!resp.isSuccessful) throw IllegalStateException("HTTP ${resp.code}")
-            val body = resp.body?.string().orEmpty()
-            return JSONObject(body)
-        }
-    }
-
     private tailrec fun isDnsFailure(error: Throwable?): Boolean = when (error) {
         null -> false
         is UnknownHostException -> true
         else -> isDnsFailure(error.cause)
     }
+
+    private const val REQUEST_ATTEMPTS = 3
+    private const val RETRY_DELAY_MS = 250L
 }
 
 /** Small JSON helpers */

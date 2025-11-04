@@ -22,6 +22,7 @@ private class RouteRemoteViewsFactory(
     private val routeId: String = intent.getStringExtra(EXTRA_ROUTE_ID) ?: ROUTE_ID_A
     private val origin: String = intent.getStringExtra(EXTRA_ORIGIN) ?: ""
     private val dest: String = intent.getStringExtra(EXTRA_DEST) ?: ""
+    private val fastOnly: Boolean = intent.getBooleanExtra(EXTRA_FAST_ONLY, false)
 
     private var items: List<WidgetServiceItem> = emptyList()
 
@@ -34,7 +35,7 @@ private class RouteRemoteViewsFactory(
     }
 
     override fun onDataSetChanged() {
-        val cached = WidgetDataCache.get(routeId)
+        val cached = WidgetDataCache.get(routeId, fastOnly)
         if (cached != null) {
             items = cached.services
             return
@@ -47,11 +48,11 @@ private class RouteRemoteViewsFactory(
 
         val repo = TrainRepository()
         val raw = runCatching {
-            runBlocking { repo.getStatusText(origin, dest, take = 8) }
+            runBlocking { repo.getStatusText(origin, dest, take = 8, fastOnly = fastOnly) }
         }.getOrElse { "Error: ${it.message}" }
 
         val parsed = parseWidgetRouteState(raw, "$origin → $dest")
-        WidgetDataCache.update(routeId, parsed)
+        WidgetDataCache.update(routeId, fastOnly, parsed)
         items = parsed.services
     }
 

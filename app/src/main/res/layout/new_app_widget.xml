@@ -101,16 +101,40 @@
             android:includeFontPadding="false" />
     </LinearLayout>
 
-    <!-- Refresh button -->
-    <Button
-        android:id="@+id/widget_refresh"
-        android:text="@string/widget_refresh"
-        android:textAllCaps="false"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:background="@drawable/widget_button_bg"
-        android:layout_gravity="end"
+    <!-- Controls -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/widget_fast_toggle"
+            android:text="@string/widget_fast_only_off"
+            android:textStyle="bold"
+            android:textColor="@color/widget_grey_accent"
+            android:background="@drawable/widget_chip_toggle_bg_unchecked"
+            android:paddingLeft="20dp"
+            android:paddingTop="10dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="10dp"
+            android:layout_marginEnd="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/widget_refresh"
+            android:text="@string/widget_refresh"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@drawable/widget_button_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </LinearLayout>

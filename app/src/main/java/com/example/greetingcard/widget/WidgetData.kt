@@ -5,6 +5,7 @@ const val ROUTE_ID_B = "route_b"
 const val EXTRA_ROUTE_ID = "com.example.greetingcard.widget.EXTRA_ROUTE_ID"
 const val EXTRA_ORIGIN = "com.example.greetingcard.widget.EXTRA_ORIGIN"
 const val EXTRA_DEST = "com.example.greetingcard.widget.EXTRA_DEST"
+const val EXTRA_FAST_ONLY = "com.example.greetingcard.widget.EXTRA_FAST_ONLY"
 
 private const val DEFAULT_EMPTY_MESSAGE = "No upcoming services."
 
@@ -26,15 +27,23 @@ data class WidgetRouteState(
  * This avoids re-fetching data for every ListView bind.
  */
 object WidgetDataCache {
-    private val routeStates: MutableMap<String, WidgetRouteState> = mutableMapOf()
+    private data class CacheKey(val routeId: String, val fastOnly: Boolean)
+
+    private val routeStates: MutableMap<CacheKey, WidgetRouteState> = mutableMapOf()
 
     @Synchronized
-    fun update(routeId: String, state: WidgetRouteState) {
-        routeStates[routeId] = state
+    fun update(routeId: String, fastOnly: Boolean, state: WidgetRouteState) {
+        routeStates[CacheKey(routeId, fastOnly)] = state
     }
 
     @Synchronized
-    fun get(routeId: String): WidgetRouteState? = routeStates[routeId]
+    fun get(routeId: String, fastOnly: Boolean): WidgetRouteState? =
+        routeStates[CacheKey(routeId, fastOnly)]
+
+    @Synchronized
+    fun clear() {
+        routeStates.clear()
+    }
 }
 
 /**

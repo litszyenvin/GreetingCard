@@ -17,7 +17,12 @@ class TrainRepository(
      * @param dest   3-letter CRS (e.g. "ZFD")
      * @param take   number of trains to include
      */
-    suspend fun getStatusText(origin: String, dest: String, take: Int = 4): String =
+    suspend fun getStatusText(
+        origin: String,
+        dest: String,
+        take: Int = 4,
+        fastOnly: Boolean = false
+    ): String =
         withContext(Dispatchers.IO) {
             if (BuildConfig.RTT_USER.isEmpty() || BuildConfig.RTT_PASS.isEmpty()) {
                 return@withContext "RTT credentials missing. Add RTT_USER and RTT_PASS to ~/.gradle/gradle.properties"
@@ -26,14 +31,14 @@ class TrainRepository(
             val search = runCatching { client.search(origin, dest) }
                 .getOrElse { return@withContext "Error fetching search: ${it.message}" }
 
-            val services = search.optArray("services")
-            if (services.length() == 0) return@withContext "No services returned."
+            val servicesArray = search.optArray("services")
+            if (servicesArray.length() == 0) return@withContext "No services returned."
 
             val destCrs = dest.uppercase()
-            val blocks = mutableListOf<String>() // each block = 2 lines per service
+            val services = mutableListOf<ServiceBlock>()
 
-            for (i in 0 until services.length()) {
-                val service = services.getJSONObject(i)
+            for (i in 0 until servicesArray.length()) {
+                val service = servicesArray.getJSONObject(i)
                 val location = service.optObj("locationDetail") ?: continue
                 val uid = service.optString("serviceUid")
                 val runDate = service.optString("runDate")
@@ -100,14 +105,53 @@ class TrainRepository(
                 // Line 2: Destination • Status
                 val line2 = "$destDesc • $status"
 
-                blocks += "$line1\n$line2"
+                services += ServiceBlock(
+                    departure = dep,
+                    arrival = arrivalTime,
+                    block = "$line1\n$line2"
+                )
 
-                if (blocks.size == take) break
+                if (services.size == take) break
             }
+
+            val filtered = if (fastOnly) filterSlowerServices(services) else services
+            val blocks = filtered.map { it.block }
 
             if (blocks.isEmpty()) "No matching services found."
             else "Station: $origin \u2192 $dest\n" + blocks.joinToString("\n\n")
         }
+
+    private data class ServiceBlock(
+        val departure: String,
+        val arrival: String,
+        val block: String
+    )
+
+    private fun filterSlowerServices(services: List<ServiceBlock>): List<ServiceBlock> {
+        if (services.size <= 1) return services
+        val result = mutableListOf<ServiceBlock>()
+        for (i in services.indices) {
+            val current = services[i]
+            val next = services.getOrNull(i + 1)
+            if (next != null && isTimeBefore(current.departure, next.departure) &&
+                isTimeAfter(current.arrival, next.arrival)
+            ) {
+                continue
+            }
+            result += current
+        }
+        return result
+    }
+
+    private fun isTimeBefore(a: String, b: String): Boolean = toMinutes(a) < toMinutes(b)
+
+    private fun isTimeAfter(a: String, b: String): Boolean = toMinutes(a) > toMinutes(b)
+
+    private fun toMinutes(value: String): Int {
+        val hours = value.substring(0, 2).toInt()
+        val minutes = value.substring(2).toInt()
+        return hours * 60 + minutes
+    }
 
     /**
      * Human-readable station name fallback for description matching.

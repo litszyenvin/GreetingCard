@@ -22,7 +22,8 @@ data class WidgetServiceItem(
 data class WidgetRouteState(
     val title: String,
     val services: List<WidgetServiceItem>,
-    val emptyMessage: String
+    val emptyMessage: String,
+    val isStale: Boolean = false
 )
 
 /**
@@ -83,7 +84,7 @@ suspend fun fetchWidgetRouteState(
     previousState?.let { previous ->
         if (previous.services.isNotEmpty()) {
             val warningTitle = addWarningIndicator(previous.title)
-            return previous.copy(title = warningTitle)
+            return previous.copy(title = warningTitle, isStale = true)
         }
     }
 
@@ -91,7 +92,8 @@ suspend fun fetchWidgetRouteState(
     return WidgetRouteState(
         title = fallbackTitle,
         services = emptyList(),
-        emptyMessage = message
+        emptyMessage = message,
+        isStale = true
     )
 }
 
@@ -105,7 +107,8 @@ fun parseWidgetRouteState(raw: String, fallbackTitle: String): WidgetRouteState 
         return WidgetRouteState(
             title = fallbackTitle,
             services = emptyList(),
-            emptyMessage = message
+            emptyMessage = message,
+            isStale = false
         )
     }
 
@@ -132,7 +135,8 @@ fun parseWidgetRouteState(raw: String, fallbackTitle: String): WidgetRouteState 
     return WidgetRouteState(
         title = title,
         services = services.take(8),
-        emptyMessage = emptyMessage
+        emptyMessage = emptyMessage,
+        isStale = false
     )
 }
 

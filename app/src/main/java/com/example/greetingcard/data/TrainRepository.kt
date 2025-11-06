@@ -6,7 +6,6 @@ import com.example.greetingcard.net.optArray
 import com.example.greetingcard.net.optObj
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import kotlin.math.max
 
 class TrainRepository(
@@ -68,30 +67,13 @@ class TrainRepository(
                 val platformRaw = location.optString("platform", "").trim()
                 val platform = if (platformRaw.isBlank()) "—" else platformRaw
 
-                // Per-service details: find ARRIVAL at our DEST (prefer match by CRS)
-                val detail = runCatching { client.service(uid, runDate) }.getOrNull() ?: JSONObject()
-                val locations = detail.optArray("locations")
-
-                val arrivalTime = (0 until locations.length())
-                    .asSequence()
-                    .map { locations.getJSONObject(it) }
-                    .firstOrNull { loc ->
-                        val crs = loc.optString("crs").uppercase()
-                        if (crs.isNotEmpty()) {
-                            crs == destCrs
-                        } else {
-                            // Fallback to description if 'crs' missing
-                            loc.optString("description").equals(
-                                friendlyDestName(destCrs),
-                                ignoreCase = true
-                            )
-                        }
-                    }
-                    ?.let { it.optString("realtimeArrival", it.optString("gbttBookedArrival")) }
-
-                if (!isValidHHMM(arrivalTime)) continue
-
-                val journey = elapsedMinutes(dep, arrivalTime!!)
+                val arrivalLookup = if (services.size < DETAIL_LOOKUP_LIMIT) {
+                    findArrivalTime(uid, runDate, destCrs)
+                } else {
+                    null
+                }
+                val arrivalTime = arrivalLookup?.takeIf { isValidHHMM(it) }
+                val journey = if (arrivalTime != null) elapsedMinutes(dep, arrivalTime) else null
 
                 val status = when {
                     isCancelled -> "Cancelled"
@@ -100,14 +82,18 @@ class TrainRepository(
                 }
 
                 // ---- Compact, two-line format ----
-                // Line 1: dep → arr (X min) • Platform N
-                val line1 = "$dep \u2192 $arrivalTime (${journey} min) • Platform $platform"
-                // Line 2: Destination • Status
-                val line2 = "$destDesc • $status"
+                val line1 = if (arrivalTime != null && journey != null) {
+                    "$dep \u2192 $arrivalTime (${journey} min) • Platform $platform"
+                } else {
+                    "$dep • Platform $platform"
+                }
+                val line2Suffix = if (arrivalTime == null) " • ETA unavailable" else ""
+                val line2 = "$destDesc • $status$line2Suffix"
 
                 services += ServiceBlock(
                     departure = dep,
                     arrival = arrivalTime,
+                    durationMinutes = journey,
                     block = "$line1\n$line2"
                 )
 
@@ -123,7 +109,8 @@ class TrainRepository(
 
     private data class ServiceBlock(
         val departure: String,
-        val arrival: String,
+        val arrival: String?,
+        val durationMinutes: Int?,
         val block: String
     )
 
@@ -133,8 +120,12 @@ class TrainRepository(
         for (i in services.indices) {
             val current = services[i]
             val next = services.getOrNull(i + 1)
-            if (next != null && isTimeBefore(current.departure, next.departure) &&
-                isTimeAfter(current.arrival, next.arrival)
+            if (
+                next != null &&
+                current.durationMinutes != null &&
+                next.durationMinutes != null &&
+                isTimeBefore(current.departure, next.departure) &&
+                current.durationMinutes > next.durationMinutes
             ) {
                 continue
             }
@@ -144,8 +135,6 @@ class TrainRepository(
     }
 
     private fun isTimeBefore(a: String, b: String): Boolean = toMinutes(a) < toMinutes(b)
-
-    private fun isTimeAfter(a: String, b: String): Boolean = toMinutes(a) > toMinutes(b)
 
     private fun toMinutes(value: String): Int {
         val hours = value.substring(0, 2).toInt()
@@ -182,5 +171,41 @@ class TrainRepository(
         var e = end.substring(0, 2).toInt() * 60 + end.substring(2).toInt()
         if (e < s) e += 24 * 60 // midnight wrap
         return max(0, e - s)
+    }
+
+    private fun findArrivalTime(uid: String, runDate: String, destCrs: String): String? {
+        val detail = runCatching { client.service(uid, runDate) }.getOrNull() ?: return null
+        val locations = detail.optArray("locations")
+        if (locations.length() == 0) return null
+
+        for (i in 0 until locations.length()) {
+            val loc = locations.getJSONObject(i)
+            val crs = loc.optString("crs").uppercase()
+            val matches = when {
+                crs.isNotEmpty() -> crs == destCrs
+                else -> loc.optString("description").equals(
+                    friendlyDestName(destCrs),
+                    ignoreCase = true
+                )
+            }
+            if (!matches) continue
+
+            val realtime = loc.optString("realtimeArrival").takeIf { isValidHHMM(it) }
+            if (realtime != null) return realtime
+
+            val scheduled = loc.optString("gbttBookedArrival").takeIf { isValidHHMM(it) }
+            if (scheduled != null) return scheduled
+        }
+
+        return null
+    }
+
+    private companion object {
+        /**
+         * Limit how many per-train detail lookups we make. The widget only surfaces the first
+         * few departures, and avoiding extra network calls keeps refreshes reliable on weak
+         * connections while still providing journey times for the most relevant services.
+         */
+        private const val DETAIL_LOOKUP_LIMIT = 3
     }
 }

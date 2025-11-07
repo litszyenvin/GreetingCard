@@ -18,12 +18,16 @@ import com.example.greetingcard.widget.ROUTE_ID_A
 import com.example.greetingcard.widget.ROUTE_ID_B
 import com.example.greetingcard.widget.WidgetDataCache
 import com.example.greetingcard.widget.WidgetRouteState
-import com.example.greetingcard.widget.parseWidgetRouteState
+import com.example.greetingcard.widget.fetchWidgetRouteState
 import com.example.greetingcard.widget.WidgetService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class NewAppWidget : AppWidgetProvider() {
 
@@ -34,12 +38,16 @@ class NewAppWidget : AppWidgetProvider() {
         private const val PREFS_NAME = "com.example.greetingcard.widget.PREFS"
         private const val PREF_FAST_ONLY = "pref_fast_only"
         private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val fetchMutex = Mutex()
+        private var recoveryJob: Job? = null
 
         // Two routes
         private const val ORIGIN_A = "SAC"
         private const val DEST_A = "ZFD"
         private const val ORIGIN_B = "ZFD"
         private const val DEST_B = "SAC"
+
+        private const val RECOVERY_RETRY_DELAY_MS = 30_000L
     }
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
@@ -93,31 +101,54 @@ class NewAppWidget : AppWidgetProvider() {
     }
 
     private fun fetchAndUpdateAll(context: Context) {
-        val manager = AppWidgetManager.getInstance(context)
-        val ids = manager.getAppWidgetIds(ComponentName(context, NewAppWidget::class.java))
+        val appContext = context.applicationContext
+        val manager = AppWidgetManager.getInstance(appContext)
+        val ids = manager.getAppWidgetIds(ComponentName(appContext, NewAppWidget::class.java))
         if (ids.isEmpty()) return
 
         appScope.launch {
-            val repo = TrainRepository()
-            val fastOnly = isFastOnlyEnabled(context)
+            fetchMutex.withLock {
+                val repo = TrainRepository()
+                val fastOnly = isFastOnlyEnabled(appContext)
 
-            val aRaw = runCatching { repo.getStatusText(ORIGIN_A, DEST_A, take = 8, fastOnly = fastOnly) }
-                .getOrElse { "Error: ${it.message}" }
-            val bRaw = runCatching { repo.getStatusText(ORIGIN_B, DEST_B, take = 8, fastOnly = fastOnly) }
-                .getOrElse { "Error: ${it.message}" }
+                val previousA = WidgetDataCache.get(ROUTE_ID_A, fastOnly)
+                val previousB = WidgetDataCache.get(ROUTE_ID_B, fastOnly)
 
-            val routeAState = parseWidgetRouteState(aRaw, "$ORIGIN_A → $DEST_A")
-            val routeBState = parseWidgetRouteState(bRaw, "$ORIGIN_B → $DEST_B")
+                val routeAState = fetchWidgetRouteState(
+                    repo = repo,
+                    origin = ORIGIN_A,
+                    dest = DEST_A,
+                    take = 8,
+                    fastOnly = fastOnly,
+                    fallbackTitle = "$ORIGIN_A → $DEST_A",
+                    previousState = previousA
+                )
+                val routeBState = fetchWidgetRouteState(
+                    repo = repo,
+                    origin = ORIGIN_B,
+                    dest = DEST_B,
+                    take = 8,
+                    fastOnly = fastOnly,
+                    fallbackTitle = "$ORIGIN_B → $DEST_B",
+                    previousState = previousB
+                )
 
-            WidgetDataCache.update(ROUTE_ID_A, fastOnly, routeAState)
-            WidgetDataCache.update(ROUTE_ID_B, fastOnly, routeBState)
+                WidgetDataCache.update(ROUTE_ID_A, fastOnly, routeAState)
+                WidgetDataCache.update(ROUTE_ID_B, fastOnly, routeBState)
 
-            manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_a)
-            manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_b)
+                manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_a)
+                manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_b)
 
-            for (id in ids) {
-                val views = buildViews(context, id, routeAState, routeBState, fastOnly)
-                manager.updateAppWidget(id, views)
+                for (id in ids) {
+                    val views = buildViews(appContext, id, routeAState, routeBState, fastOnly)
+                    manager.updateAppWidget(id, views)
+                }
+
+                if (routeAState.isStale || routeBState.isStale) {
+                    scheduleRecovery(appContext)
+                } else {
+                    cancelRecovery()
+                }
             }
         }
     }
@@ -176,6 +207,21 @@ class NewAppWidget : AppWidgetProvider() {
         services = emptyList(),
         emptyMessage = "Loading…"
     )
+
+    private fun scheduleRecovery(context: Context) {
+        if (recoveryJob?.isActive == true) return
+        recoveryJob = appScope.launch {
+            delay(RECOVERY_RETRY_DELAY_MS)
+            fetchAndUpdateAll(context)
+        }.also { job ->
+            job.invokeOnCompletion { recoveryJob = null }
+        }
+    }
+
+    private fun cancelRecovery() {
+        recoveryJob?.cancel()
+        recoveryJob = null
+    }
 
     private fun serviceIntent(
         context: Context,

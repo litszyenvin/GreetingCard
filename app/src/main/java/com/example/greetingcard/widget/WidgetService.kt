@@ -47,13 +47,18 @@ private class RouteRemoteViewsFactory(
         }
 
         val repo = TrainRepository()
-        val raw = runCatching {
-            runBlocking { repo.getStatusText(origin, dest, take = 8, fastOnly = fastOnly) }
-        }.getOrElse { "Error: ${it.message}" }
-
-        val parsed = parseWidgetRouteState(raw, "$origin → $dest")
-        WidgetDataCache.update(routeId, fastOnly, parsed)
-        items = parsed.services
+        val state = runBlocking {
+            fetchWidgetRouteState(
+                repo = repo,
+                origin = origin,
+                dest = dest,
+                take = 8,
+                fastOnly = fastOnly,
+                fallbackTitle = "$origin → $dest"
+            )
+        }
+        WidgetDataCache.update(routeId, fastOnly, state)
+        items = state.services
     }
 
     override fun getViewAt(position: Int): RemoteViews? {

@@ -95,9 +95,10 @@ object RttClient {
             } catch (error: Throwable) {
                 lastError = error
                 if (attempt < REQUEST_ATTEMPTS - 1) {
-                    if (error is java.io.IOException) {
-                        primaryClient.connectionPool.evictAll()
-                    }
+                    // Evict connection pool on any network error to prevent stale connections
+                    primaryClient.connectionPool.evictAll()
+                    dohClient.connectionPool.evictAll()
+                    
                     try {
                         Thread.sleep(RETRY_DELAY_MS * (attempt + 1))
                     } catch (_: InterruptedException) {

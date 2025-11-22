@@ -33,7 +33,7 @@ class TrainViewModel(
 
     private fun startPolling() {
         viewModelScope.launch {
-            var delayMs = 0L
+            var backoffMs = 0L
             while (isActive) {
                 try {
                     // Fetch both directions sequentially
@@ -44,13 +44,16 @@ class TrainViewModel(
                     _statusText.value = a + "\n\n" + b
 
                     // reset backoff on success
-                    delayMs = refreshMs
+                    backoffMs = 0L
+                    
+                    // Wait before next refresh
+                    delay(refreshMs)
                 } catch (e: Exception) {
                     _statusText.value = "Error fetching data: ${e.message ?: "unknown"}"
-                    // exponential-ish backoff on errors
-                    delayMs = if (delayMs == 0L) refreshMs else min(delayMs * 2, maxBackoffMs)
+                    // exponential-ish backoff on errors: start at refreshMs, then double each attempt
+                    backoffMs = if (backoffMs == 0L) refreshMs else min(backoffMs * 2, maxBackoffMs)
+                    delay(backoffMs)
                 }
-                delay(delayMs)
             }
         }
     }

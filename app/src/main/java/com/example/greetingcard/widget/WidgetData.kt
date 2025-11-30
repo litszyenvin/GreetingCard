@@ -1,5 +1,6 @@
 package com.example.greetingcard.widget
 
+import android.util.Log
 import com.example.greetingcard.data.TrainRepository
 import kotlinx.coroutines.delay
 
@@ -8,6 +9,7 @@ const val ROUTE_ID_B = "route_b"
 const val EXTRA_ROUTE_ID = "com.example.greetingcard.widget.EXTRA_ROUTE_ID"
 const val EXTRA_ORIGIN = "com.example.greetingcard.widget.EXTRA_ORIGIN"
 const val EXTRA_DEST = "com.example.greetingcard.widget.EXTRA_DEST"
+private const val TAG = "WidgetData"
 const val EXTRA_FAST_ONLY = "com.example.greetingcard.widget.EXTRA_FAST_ONLY"
 
 private const val DEFAULT_EMPTY_MESSAGE = "No upcoming services."
@@ -68,7 +70,10 @@ suspend fun fetchWidgetRouteState(
         val parsed = raw?.let { parseWidgetRouteState(it, fallbackTitle) }
         val isError = raw == null || raw.trim().startsWith("Error", ignoreCase = true)
 
+        Log.d(TAG, "Attempt $attempt for $origin→$dest: isError=$isError, raw=${raw?.take(100)}, services=${parsed?.services?.size}")
+
         if (!isError && parsed != null) {
+            Log.d(TAG, "Success: Got ${parsed.services.size} services for $origin→$dest")
             return parsed
         }
 
@@ -81,9 +86,11 @@ suspend fun fetchWidgetRouteState(
         }
     }
 
+    Log.w(TAG, "All attempts failed for $origin→$dest, lastError=$lastErrorMessage, hasPrevious=${previousState != null}")
     previousState?.let { previous ->
         if (previous.services.isNotEmpty()) {
             val warningTitle = addWarningIndicator(previous.title)
+            Log.d(TAG, "Returning stale state with ${previous.services.size} services")
             return previous.copy(title = warningTitle, isStale = true)
         }
     }
@@ -102,8 +109,11 @@ suspend fun fetchWidgetRouteState(
  */
 fun parseWidgetRouteState(raw: String, fallbackTitle: String): WidgetRouteState {
     val trimmed = raw.trim()
+    Log.d(TAG, "parseWidgetRouteState: raw='$trimmed'")
+    
     if (!trimmed.contains('\n')) {
         val message = trimmed.ifBlank { DEFAULT_EMPTY_MESSAGE }
+        Log.w(TAG, "No newline in response, treating as error: $message")
         return WidgetRouteState(
             title = fallbackTitle,
             services = emptyList(),
@@ -132,6 +142,8 @@ fun parseWidgetRouteState(raw: String, fallbackTitle: String): WidgetRouteState 
         DEFAULT_EMPTY_MESSAGE
     }
 
+    Log.d(TAG, "parseWidgetRouteState result: services=${services.size}, title='$title', emptyMessage='$emptyMessage'")
+    
     return WidgetRouteState(
         title = title,
         services = services.take(8),

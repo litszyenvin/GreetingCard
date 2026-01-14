@@ -1,10 +1,15 @@
 package com.example.greetingcard.widget
 
+import android.util.Log
+import com.example.greetingcard.data.TrainRepository
+import kotlinx.coroutines.delay
+
 const val ROUTE_ID_A = "route_a"
 const val ROUTE_ID_B = "route_b"
 const val EXTRA_ROUTE_ID = "com.example.greetingcard.widget.EXTRA_ROUTE_ID"
 const val EXTRA_ORIGIN = "com.example.greetingcard.widget.EXTRA_ORIGIN"
 const val EXTRA_DEST = "com.example.greetingcard.widget.EXTRA_DEST"
+private const val TAG = "WidgetData"
 const val EXTRA_FAST_ONLY = "com.example.greetingcard.widget.EXTRA_FAST_ONLY"
 
 private const val DEFAULT_EMPTY_MESSAGE = "No upcoming services."
@@ -19,7 +24,8 @@ data class WidgetServiceItem(
 data class WidgetRouteState(
     val title: String,
     val services: List<WidgetServiceItem>,
-    val emptyMessage: String
+    val emptyMessage: String,
+    val isStale: Boolean = false
 )
 
 /**
@@ -46,17 +52,73 @@ object WidgetDataCache {
     }
 }
 
+/** Attempt to fetch widget data with retries and fall back to the last good state. */
+suspend fun fetchWidgetRouteState(
+    repo: TrainRepository,
+    origin: String,
+    dest: String,
+    take: Int,
+    fastOnly: Boolean,
+    fallbackTitle: String,
+    previousState: WidgetRouteState? = null
+): WidgetRouteState {
+    var lastErrorMessage: String? = null
+
+    repeat(WIDGET_FETCH_ATTEMPTS) { attempt ->
+        val result = runCatching { repo.getStatusText(origin, dest, take, fastOnly) }
+        val raw = result.getOrNull()
+        val parsed = raw?.let { parseWidgetRouteState(it, fallbackTitle) }
+        val isError = raw == null || raw.trim().startsWith("Error", ignoreCase = true)
+
+        Log.d(TAG, "Attempt $attempt for $origin→$dest: isError=$isError, raw=${raw?.take(100)}, services=${parsed?.services?.size}")
+
+        if (!isError && parsed != null) {
+            Log.d(TAG, "Success: Got ${parsed.services.size} services for $origin→$dest")
+            return parsed
+        }
+
+        lastErrorMessage = parsed?.emptyMessage
+            ?: result.exceptionOrNull()?.message?.let { "Error: $it" }
+            ?: GENERIC_ERROR_MESSAGE
+
+        if (attempt < WIDGET_FETCH_ATTEMPTS - 1) {
+            delay(WIDGET_FETCH_RETRY_DELAY_MS * (attempt + 1))
+        }
+    }
+
+    Log.w(TAG, "All attempts failed for $origin→$dest, lastError=$lastErrorMessage, hasPrevious=${previousState != null}")
+    previousState?.let { previous ->
+        if (previous.services.isNotEmpty()) {
+            val warningTitle = addWarningIndicator(previous.title)
+            Log.d(TAG, "Returning stale state with ${previous.services.size} services")
+            return previous.copy(title = warningTitle, isStale = true)
+        }
+    }
+
+    val message = lastErrorMessage ?: GENERIC_ERROR_MESSAGE
+    return WidgetRouteState(
+        title = fallbackTitle,
+        services = emptyList(),
+        emptyMessage = message,
+        isStale = true
+    )
+}
+
 /**
  * Convert the repository's status text into a widget-friendly structure.
  */
 fun parseWidgetRouteState(raw: String, fallbackTitle: String): WidgetRouteState {
     val trimmed = raw.trim()
+    Log.d(TAG, "parseWidgetRouteState: raw='$trimmed'")
+    
     if (!trimmed.contains('\n')) {
         val message = trimmed.ifBlank { DEFAULT_EMPTY_MESSAGE }
+        Log.w(TAG, "No newline in response, treating as error: $message")
         return WidgetRouteState(
             title = fallbackTitle,
             services = emptyList(),
-            emptyMessage = message
+            emptyMessage = message,
+            isStale = false
         )
     }
 
@@ -80,10 +142,13 @@ fun parseWidgetRouteState(raw: String, fallbackTitle: String): WidgetRouteState 
         DEFAULT_EMPTY_MESSAGE
     }
 
+    Log.d(TAG, "parseWidgetRouteState result: services=${services.size}, title='$title', emptyMessage='$emptyMessage'")
+    
     return WidgetRouteState(
         title = title,
         services = services.take(8),
-        emptyMessage = emptyMessage
+        emptyMessage = emptyMessage,
+        isStale = false
     )
 }
 
@@ -107,3 +172,10 @@ private fun ensureArrowDirection(value: String, fallbackTitle: String): String {
     val normalized = value.replace("-", "→")
     return if ('→' in normalized) normalized else fallbackTitle
 }
+
+private fun addWarningIndicator(title: String): String =
+    if (title.contains("⚠")) title else "$title ⚠"
+
+private const val WIDGET_FETCH_ATTEMPTS = 3
+private const val WIDGET_FETCH_RETRY_DELAY_MS = 500L
+private const val GENERIC_ERROR_MESSAGE = "Error: Unable to load services."

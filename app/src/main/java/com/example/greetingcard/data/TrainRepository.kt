@@ -1,5 +1,6 @@
 package com.example.greetingcard.data
 
+import android.util.Log
 import com.example.greetingcard.BuildConfig
 import com.example.greetingcard.net.RttClient
 import com.example.greetingcard.net.optArray
@@ -12,6 +13,10 @@ import kotlin.math.max
 class TrainRepository(
     private val client: RttClient = RttClient
 ) {
+    companion object {
+        private const val TAG = "TrainRepository"
+    }
+
     /**
      * @param origin 3-letter CRS (e.g. "SAC")
      * @param dest   3-letter CRS (e.g. "ZFD")
@@ -29,10 +34,19 @@ class TrainRepository(
             }
 
             val search = runCatching { client.search(origin, dest) }
-                .getOrElse { return@withContext "Error fetching search: ${it.message}" }
+                .getOrElse { 
+                    Log.e(TAG, "Error fetching search for $origin→$dest: ${it.message}", it)
+                    return@withContext "Error fetching search: ${it.message}" 
+                }
 
+            Log.d(TAG, "Got search response for $origin→$dest: ${search.toString().take(200)}")
             val servicesArray = search.optArray("services")
-            if (servicesArray.length() == 0) return@withContext "No services returned."
+            Log.d(TAG, "Found ${servicesArray.length()} services for $origin→$dest")
+            if (servicesArray.length() == 0) {
+                val msg = "No services returned."
+                Log.w(TAG, "$origin→$dest: $msg")
+                return@withContext msg
+            }
 
             val destCrs = dest.uppercase()
             val services = mutableListOf<ServiceBlock>()

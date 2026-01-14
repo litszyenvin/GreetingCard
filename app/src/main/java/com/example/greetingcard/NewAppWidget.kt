@@ -7,6 +7,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import com.example.greetingcard.data.TrainRepository
@@ -18,12 +21,16 @@ import com.example.greetingcard.widget.ROUTE_ID_A
 import com.example.greetingcard.widget.ROUTE_ID_B
 import com.example.greetingcard.widget.WidgetDataCache
 import com.example.greetingcard.widget.WidgetRouteState
-import com.example.greetingcard.widget.parseWidgetRouteState
+import com.example.greetingcard.widget.fetchWidgetRouteState
 import com.example.greetingcard.widget.WidgetService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class NewAppWidget : AppWidgetProvider() {
 
@@ -33,13 +40,22 @@ class NewAppWidget : AppWidgetProvider() {
         private const val ACTION_TOGGLE_FAST = "com.example.greetingcard.action.TOGGLE_FAST"
         private const val PREFS_NAME = "com.example.greetingcard.widget.PREFS"
         private const val PREF_FAST_ONLY = "pref_fast_only"
-        private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private const val TAG = "NewAppWidget"
+        private val fetchMutex = Mutex()
+        private var recoveryJob: Job? = null
 
         // Two routes
         private const val ORIGIN_A = "SAC"
         private const val DEST_A = "ZFD"
         private const val ORIGIN_B = "ZFD"
         private const val DEST_B = "SAC"
+
+        private const val RECOVERY_RETRY_DELAY_MS = 30_000L
+        
+        // Create a fresh scope each time to avoid cancellation issues
+        private fun getAppScope(): CoroutineScope {
+            return CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        }
     }
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
@@ -64,7 +80,10 @@ class NewAppWidget : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         when (intent.action) {
-            ACTION_REFRESH, AppWidgetManager.ACTION_APPWIDGET_UPDATE -> fetchAndUpdateAll(context)
+            ACTION_REFRESH, AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
+                performHapticFeedback(context)
+                fetchAndUpdateAll(context)
+            }
             ACTION_TOGGLE_FAST -> {
                 val newValue = !isFastOnlyEnabled(context)
                 setFastOnlyEnabled(context, newValue)
@@ -93,31 +112,68 @@ class NewAppWidget : AppWidgetProvider() {
     }
 
     private fun fetchAndUpdateAll(context: Context) {
-        val manager = AppWidgetManager.getInstance(context)
-        val ids = manager.getAppWidgetIds(ComponentName(context, NewAppWidget::class.java))
-        if (ids.isEmpty()) return
+        val appContext = context.applicationContext
+        val manager = AppWidgetManager.getInstance(appContext)
+        val ids = manager.getAppWidgetIds(ComponentName(appContext, NewAppWidget::class.java))
+        if (ids.isEmpty()) {
+            Log.w(TAG, "No widget IDs found")
+            return
+        }
 
-        appScope.launch {
-            val repo = TrainRepository()
-            val fastOnly = isFastOnlyEnabled(context)
+        Log.d(TAG, "Starting fetch for ${ids.size} widget(s)")
+        val scope = getAppScope()
+        scope.launch {
+            try {
+                fetchMutex.withLock {
+                    val repo = TrainRepository()
+                    val fastOnly = isFastOnlyEnabled(appContext)
 
-            val aRaw = runCatching { repo.getStatusText(ORIGIN_A, DEST_A, take = 8, fastOnly = fastOnly) }
-                .getOrElse { "Error: ${it.message}" }
-            val bRaw = runCatching { repo.getStatusText(ORIGIN_B, DEST_B, take = 8, fastOnly = fastOnly) }
-                .getOrElse { "Error: ${it.message}" }
+                    val previousA = WidgetDataCache.get(ROUTE_ID_A, fastOnly)
+                    val previousB = WidgetDataCache.get(ROUTE_ID_B, fastOnly)
 
-            val routeAState = parseWidgetRouteState(aRaw, "$ORIGIN_A → $DEST_A")
-            val routeBState = parseWidgetRouteState(bRaw, "$ORIGIN_B → $DEST_B")
+                    Log.d(TAG, "Fetching route A: $ORIGIN_A → $DEST_A")
+                    val routeAState = fetchWidgetRouteState(
+                        repo = repo,
+                        origin = ORIGIN_A,
+                        dest = DEST_A,
+                        take = 8,
+                        fastOnly = fastOnly,
+                        fallbackTitle = "$ORIGIN_A → $DEST_A",
+                        previousState = previousA
+                    )
+                    Log.d(TAG, "Fetching route B: $ORIGIN_B → $DEST_B")
+                    val routeBState = fetchWidgetRouteState(
+                        repo = repo,
+                        origin = ORIGIN_B,
+                        dest = DEST_B,
+                        take = 8,
+                        fastOnly = fastOnly,
+                        fallbackTitle = "$ORIGIN_B → $DEST_B",
+                        previousState = previousB
+                    )
 
-            WidgetDataCache.update(ROUTE_ID_A, fastOnly, routeAState)
-            WidgetDataCache.update(ROUTE_ID_B, fastOnly, routeBState)
+                    WidgetDataCache.update(ROUTE_ID_A, fastOnly, routeAState)
+                    WidgetDataCache.update(ROUTE_ID_B, fastOnly, routeBState)
 
-            manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_a)
-            manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_b)
+                    Log.d(TAG, "Updating ${ids.size} widgets")
+                    manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_a)
+                    manager.notifyAppWidgetViewDataChanged(ids, R.id.widget_list_b)
 
-            for (id in ids) {
-                val views = buildViews(context, id, routeAState, routeBState, fastOnly)
-                manager.updateAppWidget(id, views)
+                    for (id in ids) {
+                        val views = buildViews(appContext, id, routeAState, routeBState, fastOnly)
+                        manager.updateAppWidget(id, views)
+                    }
+
+                    if (routeAState.isStale || routeBState.isStale) {
+                        Log.d(TAG, "Routes are stale, scheduling recovery")
+                        scheduleRecovery(appContext)
+                    } else {
+                        Log.d(TAG, "Routes are fresh, canceling recovery")
+                        cancelRecovery()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching widget data: ${e.message}", e)
             }
         }
     }
@@ -177,6 +233,23 @@ class NewAppWidget : AppWidgetProvider() {
         emptyMessage = "Loading…"
     )
 
+    private fun scheduleRecovery(context: Context) {
+        if (recoveryJob?.isActive == true) return
+        Log.d(TAG, "Scheduling recovery in ${RECOVERY_RETRY_DELAY_MS}ms")
+        recoveryJob = getAppScope().launch {
+            delay(RECOVERY_RETRY_DELAY_MS)
+            Log.d(TAG, "Recovery attempt triggered")
+            fetchAndUpdateAll(context)
+        }.also { job ->
+            job.invokeOnCompletion { recoveryJob = null }
+        }
+    }
+
+    private fun cancelRecovery() {
+        recoveryJob?.cancel()
+        recoveryJob = null
+    }
+
     private fun serviceIntent(
         context: Context,
         appWidgetId: Int,
@@ -228,5 +301,19 @@ class NewAppWidget : AppWidgetProvider() {
             .edit()
             .putBoolean(PREF_FAST_ONLY, enabled)
             .apply()
+    }
+
+    private fun performHapticFeedback(context: Context) {
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        vibrator?.let {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                // Custom vibration pattern: 0ms delay, 100ms vibrate, repeat once
+                val pattern = longArrayOf(0, 100)
+                it.vibrate(VibrationEffect.createWaveform(pattern, -1))
+            } else {
+                @Suppress("DEPRECATION")
+                it.vibrate(100)
+            }
+        }
     }
 }
